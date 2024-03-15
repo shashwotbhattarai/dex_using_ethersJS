@@ -1,113 +1,201 @@
-import Image from "next/image";
+"use client";
+import { Contract, ethers, formatEther, parseUnits } from "ethers";
+import { useState } from "react";
+import { MetaMaskInpageProvider } from "@metamask/providers";
+
+declare global {
+  interface Window{
+    ethereum?:MetaMaskInpageProvider
+  }
+}
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+	async function connectToWallet() {
+		if (window.ethereum) {
+			console.log("detected");
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+			try {
+				await window.ethereum.request({
+					method: "wallet_requestPermissions",
+					params: [{ eth_accounts: {} }],
+				});
+				const accounts = await window.ethereum.request({
+					method: "eth_requestAccounts",
+				});
+				console.log(accounts);
+				console.log("public key of selected account", accounts[0]);
+			} catch (error) {
+				console.log("Error connecting...");
+			}
+		} else {
+			alert("Meta Mask not detected");
+		}
+	}
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+	return (
+		<div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
+			<h1 className="text-4xl font-bold text-gray-800 mb-6">
+				Welcome to Your DApp
+			</h1>
+			<button
+				onClick={connectToWallet}
+				className="text-white bg-blue-600 hover:bg-blue-700  font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+			>
+				Connect Wallet
+			</button>
+			<Swap />
+		</div>
+	);
+}
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+export function Swap() {
+	const [payToken, setPayToken] = useState("ETH");
+	const [receiveToken, setReceiveToken] = useState("Select token");
+	const [payAmount, setPayAmount] = useState("");
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+	const handlePayTokenChange = (event: any) => {
+		setPayToken(event.target.value);
+	};
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+	const handleReceiveTokenChange = (event: any) => {
+		setReceiveToken(event.target.value);
+	};
+
+	const handlePayAmountChange = (event: any) => {
+		setPayAmount(event.target.value);
+	};
+
+	const handleSubmit = async () => {
+		const value: BigInt = BigInt(payAmount) * BigInt("1000000000000000000");
+		const finalValue = value.toString();
+		const payload = {
+			token1: "0x9A4F639FF1c20Fe09371E07d0D48f8687B6Bed85",
+			token2: "0x8c070420Fbe00D928d9AC558460676D9e5940C0A",
+			token1value: finalValue,
+		};
+
+		console.log("Submitting swap payload:", payload);
+
+		const provider = new ethers.BrowserProvider(window.ethereum);
+		const signer = await provider.getSigner();
+		const blockNumber = await provider.getBlockNumber();
+		console.log("blockNumber", blockNumber);
+
+		const balance = await provider.getBalance(
+			"0xd06C215007bC67c65e18c8446b5aa9895C78306d"
+		);
+		console.log("balance", formatEther(balance));
+
+		const abi = [
+			{
+				inputs: [],
+				name: "getExchangeRate",
+				outputs: [
+					{
+						internalType: "uint256",
+						name: "",
+						type: "uint256",
+					},
+				],
+				stateMutability: "view",
+				type: "function",
+			},
+			{
+				inputs: [
+					{
+						internalType: "address",
+						name: "token1",
+						type: "address",
+					},
+					{
+						internalType: "address",
+						name: "token2",
+						type: "address",
+					},
+					{
+						internalType: "uint256",
+						name: "token1amount",
+						type: "uint256",
+					},
+				],
+				name: "swap",
+				outputs: [],
+				stateMutability: "nonpayable",
+				type: "function",
+			},
+		];
+
+		const contract = new Contract(
+			"0xf3aaDD3D713269167c92b57958045142E2C889E0",
+			abi,
+			signer
+		);
+
+		// const tx = await contract.swap("0x9A4F639FF1c20Fe09371E07d0D48f8687B6Bed85","0x8c070420Fbe00D928d9AC558460676D9e5940C0A","1000000000000000000")
+		const tx = await contract.swap(
+			payload.token1,
+			payload.token2,
+			payload.token1value
+		);
+
+		await tx.wait();
+	};
+
+	return (
+		<div className="bg-black text-white min-h-screen flex flex-col items-center justify-center">
+			<h1 className="text-4xl font-bold mb-8">Swap anytime, anywhere.</h1>
+			<div className="bg-gray-800 p-6 rounded-lg">
+				<div className="mb-4">
+					<label className="block text-lg mb-2" htmlFor="pay">
+						You pay
+					</label>
+					<div className="flex">
+						<input
+							id="pay"
+							type="number"
+							className="w-full rounded p-2 bg-gray-700 text-white"
+							value={payAmount}
+							onChange={handlePayAmountChange}
+						/>
+						<select
+							className="rounded p-2 bg-blue-600 text-white ml-2"
+							value={payToken}
+							onChange={handlePayTokenChange}
+						>
+							<option value="Shashwot">Shashwot</option>
+							{/* Add more options for payToken here */}
+						</select>
+					</div>
+				</div>
+				<div className="mb-4">
+					<label className="block text-lg mb-2" htmlFor="receive">
+						You receive
+					</label>
+					<div className="flex">
+						<input
+							id="receive"
+							type="number"
+							className="w-full rounded p-2 bg-gray-700 text-white"
+							disabled
+							placeholder="Amount you receive"
+						/>
+						<select
+							className="rounded p-2 bg-blue-600 text-white ml-2"
+							value={receiveToken}
+							onChange={handleReceiveTokenChange}
+						>
+							<option value="Bhattarai">Bhattarai</option>
+							{/* Add more options for receiveToken here */}
+						</select>
+					</div>
+				</div>
+				<button
+					className="w-full bg-purple-700 rounded p-3 text-lg font-semibold"
+					onClick={handleSubmit}
+				>
+					Submit Swap
+				</button>
+			</div>
+		</div>
+	);
 }
