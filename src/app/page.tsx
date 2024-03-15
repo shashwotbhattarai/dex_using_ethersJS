@@ -4,9 +4,9 @@ import { useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
 declare global {
-  interface Window{
-    ethereum?:MetaMaskInpageProvider
-  }
+	interface Window {
+		ethereum?: MetaMaskInpageProvider;
+	}
 }
 
 export default function Home() {
@@ -31,15 +31,12 @@ export default function Home() {
 			alert("Meta Mask not detected");
 		}
 	}
-
 	return (
-		<div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
-			<h1 className="text-4xl font-bold text-gray-800 mb-6">
-				Welcome to Your DApp
-			</h1>
+		<div className="min-h-screen bg-gray-900 flex flex-col justify-center items-center">
+			<h1 className="text-5xl font-bold text-white mb-10">First DEX Dapp</h1>
 			<button
 				onClick={connectToWallet}
-				className="text-white bg-blue-600 hover:bg-blue-700  font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+				className="mb-6 py-2 px-10 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
 			>
 				Connect Wallet
 			</button>
@@ -68,25 +65,263 @@ export function Swap() {
 	const handleSubmit = async () => {
 		const value: BigInt = BigInt(payAmount) * BigInt("1000000000000000000");
 		const finalValue = value.toString();
+		const swapContractAddress = "0xf3aaDD3D713269167c92b57958045142E2C889E0";
+		const shashwotTokenAddress = "0x9A4F639FF1c20Fe09371E07d0D48f8687B6Bed85";
+		const bhattaraiTokenAddress = "0x8c070420Fbe00D928d9AC558460676D9e5940C0A";
 		const payload = {
 			token1: "0x9A4F639FF1c20Fe09371E07d0D48f8687B6Bed85",
 			token2: "0x8c070420Fbe00D928d9AC558460676D9e5940C0A",
 			token1value: finalValue,
 		};
-
 		console.log("Submitting swap payload:", payload);
 
 		const provider = new ethers.BrowserProvider(window.ethereum);
 		const signer = await provider.getSigner();
-		const blockNumber = await provider.getBlockNumber();
-		console.log("blockNumber", blockNumber);
 
-		const balance = await provider.getBalance(
-			"0xd06C215007bC67c65e18c8446b5aa9895C78306d"
+		const shashwotTokenAbi = [
+			{
+				inputs: [],
+				stateMutability: "nonpayable",
+				type: "constructor",
+			},
+			{
+				anonymous: false,
+				inputs: [
+					{
+						indexed: true,
+						internalType: "address",
+						name: "owner",
+						type: "address",
+					},
+					{
+						indexed: true,
+						internalType: "address",
+						name: "spender",
+						type: "address",
+					},
+					{
+						indexed: false,
+						internalType: "uint256",
+						name: "value",
+						type: "uint256",
+					},
+				],
+				name: "Approval",
+				type: "event",
+			},
+			{
+				anonymous: false,
+				inputs: [
+					{
+						indexed: true,
+						internalType: "address",
+						name: "from",
+						type: "address",
+					},
+					{
+						indexed: true,
+						internalType: "address",
+						name: "to",
+						type: "address",
+					},
+					{
+						indexed: false,
+						internalType: "uint256",
+						name: "value",
+						type: "uint256",
+					},
+				],
+				name: "Transfer",
+				type: "event",
+			},
+			{
+				inputs: [
+					{
+						internalType: "address",
+						name: "",
+						type: "address",
+					},
+					{
+						internalType: "address",
+						name: "",
+						type: "address",
+					},
+				],
+				name: "allowance",
+				outputs: [
+					{
+						internalType: "uint256",
+						name: "",
+						type: "uint256",
+					},
+				],
+				stateMutability: "view",
+				type: "function",
+			},
+			{
+				inputs: [
+					{
+						internalType: "address",
+						name: "_spender",
+						type: "address",
+					},
+					{
+						internalType: "uint256",
+						name: "_value",
+						type: "uint256",
+					},
+				],
+				name: "approve",
+				outputs: [
+					{
+						internalType: "bool",
+						name: "success",
+						type: "bool",
+					},
+				],
+				stateMutability: "nonpayable",
+				type: "function",
+			},
+			{
+				inputs: [
+					{
+						internalType: "address",
+						name: "",
+						type: "address",
+					},
+				],
+				name: "balanceOf",
+				outputs: [
+					{
+						internalType: "uint256",
+						name: "",
+						type: "uint256",
+					},
+				],
+				stateMutability: "view",
+				type: "function",
+			},
+			{
+				inputs: [],
+				name: "decimals",
+				outputs: [
+					{
+						internalType: "uint8",
+						name: "",
+						type: "uint8",
+					},
+				],
+				stateMutability: "view",
+				type: "function",
+			},
+			{
+				inputs: [],
+				name: "name",
+				outputs: [
+					{
+						internalType: "string",
+						name: "",
+						type: "string",
+					},
+				],
+				stateMutability: "view",
+				type: "function",
+			},
+			{
+				inputs: [],
+				name: "symbol",
+				outputs: [
+					{
+						internalType: "string",
+						name: "",
+						type: "string",
+					},
+				],
+				stateMutability: "view",
+				type: "function",
+			},
+			{
+				inputs: [],
+				name: "totalSupply",
+				outputs: [
+					{
+						internalType: "uint256",
+						name: "",
+						type: "uint256",
+					},
+				],
+				stateMutability: "view",
+				type: "function",
+			},
+			{
+				inputs: [
+					{
+						internalType: "address",
+						name: "_to",
+						type: "address",
+					},
+					{
+						internalType: "uint256",
+						name: "_value",
+						type: "uint256",
+					},
+				],
+				name: "transfer",
+				outputs: [
+					{
+						internalType: "bool",
+						name: "success",
+						type: "bool",
+					},
+				],
+				stateMutability: "nonpayable",
+				type: "function",
+			},
+			{
+				inputs: [
+					{
+						internalType: "address",
+						name: "_from",
+						type: "address",
+					},
+					{
+						internalType: "address",
+						name: "_to",
+						type: "address",
+					},
+					{
+						internalType: "uint256",
+						name: "_value",
+						type: "uint256",
+					},
+				],
+				name: "transferFrom",
+				outputs: [
+					{
+						internalType: "bool",
+						name: "success",
+						type: "bool",
+					},
+				],
+				stateMutability: "nonpayable",
+				type: "function",
+			},
+		];
+
+		const shashwotTokenContract = new Contract(
+			shashwotTokenAddress,
+			shashwotTokenAbi,
+			signer
 		);
-		console.log("balance", formatEther(balance));
 
-		const abi = [
+		const approvetx = await shashwotTokenContract.approve(
+			swapContractAddress,
+			payload.token1value
+		);
+
+		await approvetx.wait();
+
+		const swapAbi = [
 			{
 				inputs: [],
 				name: "getExchangeRate",
@@ -125,40 +360,34 @@ export function Swap() {
 			},
 		];
 
-		const contract = new Contract(
-			"0xf3aaDD3D713269167c92b57958045142E2C889E0",
-			abi,
-			signer
-		);
+		const swapContract = new Contract(swapContractAddress, swapAbi, signer);
 
-		// const tx = await contract.swap("0x9A4F639FF1c20Fe09371E07d0D48f8687B6Bed85","0x8c070420Fbe00D928d9AC558460676D9e5940C0A","1000000000000000000")
-		const tx = await contract.swap(
+		const swaptx = await swapContract.swap(
 			payload.token1,
 			payload.token2,
 			payload.token1value
 		);
 
-		await tx.wait();
+		await swaptx.wait();
 	};
 
 	return (
-		<div className="bg-black text-white min-h-screen flex flex-col items-center justify-center">
-			<h1 className="text-4xl font-bold mb-8">Swap anytime, anywhere.</h1>
-			<div className="bg-gray-800 p-6 rounded-lg">
+		<div className="bg-gray-800 text-white max-w-md mx-auto rounded-xl shadow-md overflow-hidden p-6 space-y-8">
+			<div>
 				<div className="mb-4">
-					<label className="block text-lg mb-2" htmlFor="pay">
+					<label className="block text-md mb-2" htmlFor="pay">
 						You pay
 					</label>
 					<div className="flex">
 						<input
 							id="pay"
 							type="number"
-							className="w-full rounded p-2 bg-gray-700 text-white"
+							className="flex-grow rounded-l p-4 bg-gray-700 focus:outline-none text-white"
 							value={payAmount}
 							onChange={handlePayAmountChange}
 						/>
 						<select
-							className="rounded p-2 bg-blue-600 text-white ml-2"
+							className="bg-blue-500 rounded-r px-4 text-white focus:outline-none"
 							value={payToken}
 							onChange={handlePayTokenChange}
 						>
@@ -167,20 +396,20 @@ export function Swap() {
 						</select>
 					</div>
 				</div>
-				<div className="mb-4">
-					<label className="block text-lg mb-2" htmlFor="receive">
+				<div className="mb-6">
+					<label className="block text-md mb-2" htmlFor="receive">
 						You receive
 					</label>
 					<div className="flex">
 						<input
 							id="receive"
 							type="number"
-							className="w-full rounded p-2 bg-gray-700 text-white"
+							className="flex-grow rounded-l p-4 bg-gray-700 focus:outline-none text-white"
 							disabled
 							placeholder="Amount you receive"
 						/>
 						<select
-							className="rounded p-2 bg-blue-600 text-white ml-2"
+							className="bg-blue-500 rounded-r px-4 text-white focus:outline-none"
 							value={receiveToken}
 							onChange={handleReceiveTokenChange}
 						>
@@ -190,7 +419,7 @@ export function Swap() {
 					</div>
 				</div>
 				<button
-					className="w-full bg-purple-700 rounded p-3 text-lg font-semibold"
+					className="w-full bg-purple-600 rounded-md p-4 text-lg font-semibold hover:bg-purple-800 transition duration-300"
 					onClick={handleSubmit}
 				>
 					Submit Swap
