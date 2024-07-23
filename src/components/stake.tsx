@@ -15,24 +15,24 @@ declare global {
 	}
 }
 
-export function Stake() {
+interface StakeProps {
+	provider: ethers.BrowserProvider;
+	selectedAccount: string;
+}
+
+export function Stake({ provider, selectedAccount }: StakeProps) {
 	const [stakeAmount, setStake] = useState(0);
 	const [unStakeAmount, setUnStake] = useState(0);
 	const [totalStakedAmount, setTotalStakedAmount] = useState(0);
 
-	let selectedAccount: any;
-	let provider: any;
+	const [isStakeLoading, setIsStakeLoading] = useState<boolean>(false);
+	const [isStakingSuccessfull,setIsStakingSuccessfull]=useState<boolean>(false);
 
-	async function getAccounts() {
-		if (window.ethereum) {
-			const accounts: any = await window.ethereum.request({
-				method: "eth_requestAccounts",
-			});
-			selectedAccount = accounts[0];
-			console.log("selectedAccount", selectedAccount);
-			provider = new ethers.BrowserProvider(window.ethereum);
-		}
-	}
+	const [isUnStakeLoading, setIsUnStakeLoading] = useState<boolean>(false);
+	const [isUnStakingSuccessfull,setIsUnStakingSuccessfull]=useState<boolean>(false);
+
+	const [isCheckStakedAmountLoading, setIsCheckStakedAmountLoading] =
+		useState<boolean>(false);
 
 	const handleStakeChange = (event: any) => {
 		setStake(event.target.value);
@@ -43,45 +43,51 @@ export function Stake() {
 	};
 
 	const handleSubmit = async () => {
-		console.log("stakeamount", stakeAmount);
+		setIsStakeLoading(true);
+		try {
+			console.log("stakeamount", stakeAmount);
 
-		const value: BigInt = BigInt(stakeAmount) * BigInt("1000000000000000000");
-		const finalValue = value.toString();
-		console.log("finalValueToStake", finalValue);
-		await getAccounts();
+			const value: BigInt = BigInt(stakeAmount) * BigInt("1000000000000000000");
+			const finalValue = value.toString();
+			console.log("finalValueToStake", finalValue);
 
-		const signer = await provider.getSigner();
+			const signer = await provider.getSigner();
 
-		const shashwotTokenContract = new Contract(
-			shashwotTokenAddress,
-			shashwotTokenAbi,
-			signer
-		);
+			const shashwotTokenContract = new Contract(
+				shashwotTokenAddress,
+				shashwotTokenAbi,
+				signer
+			);
 
-		const stakeContract = new Contract(
-			stakeContractAddress,
-			stakeContractABI,
-			signer
-		);
+			const stakeContract = new Contract(
+				stakeContractAddress,
+				stakeContractABI,
+				signer
+			);
 
-		const approvetx = await shashwotTokenContract.approve(
-			stakeContractAddress,
-			finalValue
-		);
+			const approvetx = await shashwotTokenContract.approve(
+				stakeContractAddress,
+				finalValue
+			);
 
-		const approveResponse = await approvetx.wait();
+			const approveResponse = await approvetx.wait();
 
-		console.log("approveResponse", approveResponse);
+			console.log("approveResponse", approveResponse);
 
-		const staketx = await stakeContract.stake(finalValue);
+			const staketx = await stakeContract.stake(finalValue);
 
-		const stakeResponse = await staketx.wait();
+			const stakeResponse = await staketx.wait();
 
-		console.log("stakeResponse", stakeResponse);
+			console.log("stakeResponse", stakeResponse);
+			setIsStakingSuccessfull(true);
+		} catch (error) {
+			console.error("Error while staking:", error);
+		} finally {
+			setIsStakeLoading(false);
+		}
 	};
 
 	const checkReward = async () => {
-		await getAccounts();
 		const signer = await provider.getSigner();
 
 		const stakeContract = new Contract(
@@ -95,7 +101,6 @@ export function Stake() {
 	};
 
 	const withdrawReward = async () => {
-		await getAccounts();
 		const signer = await provider.getSigner();
 
 		const stakeContract = new Contract(
@@ -109,44 +114,65 @@ export function Stake() {
 	};
 
 	const checkStakedAmount = async () => {
-		await getAccounts();
-		const signer = await provider.getSigner();
+		setIsCheckStakedAmountLoading(true);
+		try {
+			console.log("hello");
+			const signer = await provider.getSigner();
+			console.log("hello signer", signer);
 
-		const stakeContract = new Contract(
-			stakeContractAddress,
-			stakeContractABI,
-			signer
-		);
-		const stakedAmount = await stakeContract.balanceOf(selectedAccount);
-		const stakedAmountBigInt = BigInt(stakedAmount.toString());
+			const stakeContract = new Contract(
+				stakeContractAddress,
+				stakeContractABI,
+				signer
+			);
+			console.log("hello stack contract ", stakeContract);
 
-		// Convert the BigInt value to Ether (assuming 18 decimal places)
-		const downsizedStakedAmount = stakedAmountBigInt / BigInt(10 ** 18);
+			const stakedAmount = await stakeContract.balanceOf(selectedAccount);
+			console.log("hello staked amount", selectedAccount);
+			const stakedAmountBigInt = BigInt(stakedAmount.toString());
 
-		// Convert the BigInt back to a regular number (if needed)
-		const downsizedStakedAmountNumber = Number(downsizedStakedAmount);
+			// Convert the BigInt value to Ether (assuming 18 decimal places)
+			const downsizedStakedAmount = stakedAmountBigInt / BigInt(10 ** 18);
 
-		setTotalStakedAmount(downsizedStakedAmountNumber);
+			// Convert the BigInt back to a regular number (if needed)
+			const downsizedStakedAmountNumber = Number(downsizedStakedAmount);
 
-		console.log("totalStakedAmount", downsizedStakedAmountNumber);
-		console.log("stakedAmount", stakedAmount);
+			setTotalStakedAmount(downsizedStakedAmountNumber);
+
+			console.log("totalStakedAmount", downsizedStakedAmountNumber);
+			console.log("stakedAmount", stakedAmount);
+		} catch (error) {
+			console.error("Error while checking staked amount:", error);
+		} finally {
+			setIsCheckStakedAmountLoading(false);
+		}
 	};
 
 	const withdrawStakedAmount = async () => {
-		const value: BigInt = BigInt(unStakeAmount) * BigInt("1000000000000000000");
-		const finalValue = value.toString();
-		console.log("finalValueToUnstake", finalValue);
-		await getAccounts();
-		const signer = await provider.getSigner();
+		setIsUnStakeLoading(true);
+		try {
+			const value: BigInt =
+				BigInt(unStakeAmount) * BigInt("1000000000000000000");
+			const finalValue = value.toString();
+			console.log("finalValueToUnstake", finalValue);
 
-		const stakeContract = new Contract(
-			stakeContractAddress,
-			stakeContractABI,
-			signer
-		);
-		const withdrawtx = await stakeContract.withdraw(finalValue);
-		const withdrawStakedAmountResponse = await withdrawtx.wait();
-		console.log("withdrawtx", withdrawStakedAmountResponse);
+			const signer = await provider.getSigner();
+
+			const stakeContract = new Contract(
+				stakeContractAddress,
+				stakeContractABI,
+				signer
+			);
+			const withdrawtx = await stakeContract.withdraw(finalValue);
+			const withdrawStakedAmountResponse = await withdrawtx.wait();
+			console.log("withdrawtx", withdrawStakedAmountResponse);
+			setIsUnStakingSuccessfull(true)
+
+		} catch (error) {
+			console.error("Error while withdrawing staked amount:", error);
+		} finally {
+			setIsUnStakeLoading(false);
+		}
 	};
 
 	return (
@@ -168,8 +194,9 @@ export function Stake() {
 						onClick={handleSubmit}
 						className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 flex items-center"
 					>
-						Stake
+						{isStakeLoading ? <Loader /> : "Stake"}
 					</button>
+					{isStakingSuccessfull && <div className="text-white">Success</div>}
 				</div>
 
 				<div className="flex items-center space-x-4">
@@ -184,8 +211,9 @@ export function Stake() {
 						onClick={withdrawStakedAmount}
 						className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 flex items-center"
 					>
-						Unstake
+						{isUnStakeLoading ? <Loader /> : "Unstake"}
 					</button>
+					{isUnStakingSuccessfull && <div className="text-white">Success</div>}
 				</div>
 
 				<div className="flex items-center justify-center pt-4">
@@ -193,7 +221,7 @@ export function Stake() {
 						onClick={checkStakedAmount}
 						className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded transition-colors duration-200"
 					>
-						Check Staked Amount
+						{isCheckStakedAmountLoading ? <Loader /> : "Check Staked Amount"}
 					</button>
 					<span className="ml-4 p-2 bg-blue-500 text-white rounded">
 						{totalStakedAmount}
@@ -203,3 +231,7 @@ export function Stake() {
 		</div>
 	);
 }
+
+const Loader = () => (
+	<div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+);

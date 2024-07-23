@@ -15,27 +15,17 @@ declare global {
 		ethereum?: MetaMaskInpageProvider;
 	}
 }
+interface SwapProps {
+	provider: ethers.BrowserProvider;
+}
 
-export function Swap() {
+export function Swap({ provider}: SwapProps) {
 	const [payToken, setPayToken] = useState("ETH");
 	const [receiveToken, setReceiveToken] = useState("Select token");
 	const [payAmount, setPayAmount] = useState("");
 
-	let selectedAccount: any;
-	let provider: any;
-
-	async function getAccounts() {
-		if (window.ethereum) {
-			const accounts: any = await window.ethereum.request({
-				method: "eth_requestAccounts",
-			});
-			selectedAccount = accounts[0];
-			console.log("selectedAccount", selectedAccount);
-			provider = new ethers.BrowserProvider(window.ethereum);
-		}
-	}
-
-
+	const [isSwapLoading, setIsSwapLoading] = useState<boolean>(false);
+	const [isSwapSuccessfull,setIsSwapSuccessfull]=useState<boolean>(false);
 
 	const handlePayTokenChange = (event: any) => {
 		setPayToken(event.target.value);
@@ -50,43 +40,52 @@ export function Swap() {
 	};
 
 	const handleSubmit = async () => {
-		const value: BigInt = BigInt(payAmount) * BigInt("1000000000000000000");
-		const finalValue = value.toString();
-		const payload = {
-			token1: shashwotTokenAddress,
-			token2: bhattaraiTokenAddress,
-			token1value: finalValue,
-		};
-		console.log("Submitting swap payload:", payload);
-
-		const signer = await provider.getSigner();
-
-		const shashwotTokenContract = new Contract(
-			shashwotTokenAddress,
-			shashwotTokenAbi,
-			signer
-		);
-
-		const approvetx = await shashwotTokenContract.approve(
-			swapContractAddress,
-			payload.token1value
-		);
-
-		await approvetx.wait();
-
-		const swapContract = new Contract(
-			swapContractAddress,
-			swapContractAbi,
-			signer
-		);
-
-		const swaptx = await swapContract.swap(
-			payload.token1,
-			payload.token2,
-			payload.token1value
-		);
-
-		await swaptx.wait();
+		setIsSwapLoading(true)
+		try {
+			const value: BigInt = BigInt(payAmount) * BigInt("1000000000000000000");
+			const finalValue = value.toString();
+			const payload = {
+				token1: shashwotTokenAddress,
+				token2: bhattaraiTokenAddress,
+				token1value: finalValue,
+			};
+			console.log("Submitting swap payload:", payload);
+	
+			const signer = await provider?.getSigner();
+	
+			const shashwotTokenContract = new Contract(
+				shashwotTokenAddress,
+				shashwotTokenAbi,
+				signer
+			);
+	
+			const approvetx = await shashwotTokenContract.approve(
+				swapContractAddress,
+				payload.token1value
+			);
+	
+			await approvetx.wait();
+	
+			const swapContract = new Contract(
+				swapContractAddress,
+				swapContractAbi,
+				signer
+			);
+	
+			const swaptx = await swapContract.swap(
+				payload.token1,
+				payload.token2,
+				payload.token1value
+			);
+	
+			await swaptx.wait();
+			setIsSwapSuccessfull(true)
+		} catch (error) {
+			console.log("error in swap",error)
+			
+		}finally{
+			setIsSwapLoading(false)
+		}
 	};
 
 	return (
@@ -140,9 +139,14 @@ export function Swap() {
 					className="w-full bg-purple-600 rounded-md p-4 text-lg font-semibold hover:bg-purple-800 transition duration-300"
 					onClick={handleSubmit}
 				>
-					Submit Swap
+					{isSwapLoading ? <Loader /> : "Swap"}
 				</button>
+				{isSwapSuccessfull && <div className="text-white">Success</div>}
 			</div>
 		</div>
 	);
 }
+
+const Loader = () => (
+	<div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+);

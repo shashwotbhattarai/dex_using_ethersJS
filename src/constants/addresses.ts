@@ -1,4 +1,4 @@
-export const swapContractAddress = "0xf3aaDD3D713269167c92b57958045142E2C889E0";
-export const shashwotTokenAddress = "0x9A4F639FF1c20Fe09371E07d0D48f8687B6Bed85";
-export const bhattaraiTokenAddress = "0x8c070420Fbe00D928d9AC558460676D9e5940C0A";
-export const stakeContractAddress = "0x35d61791Aa1C8b74B1b9cfB2ABc39Ce694490543";
+export const swapContractAddress = "0xa92be623984215A058effe2b9383aB442E43b620";
+export const shashwotTokenAddress = "0x10eb967fc161A8bA9785F2053598b32167F1f01b";
+export const bhattaraiTokenAddress = "0x65C9A173d689c71366912e391eb17a99464d21E8";
+export const stakeContractAddress = "0xCFfe34479B085Dd250ea72b94e9F9B47d58BD80A";
