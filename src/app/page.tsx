@@ -43,7 +43,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col justify-center items-center">
-      <h1 className="text-5xl font-bold text-white mb-10">First DEX Dapp</h1>
+      <h1 className="text-5xl font-bold text-white mb-10">DEX Dapp</h1>
       
       {provider === undefined ? (
         <button

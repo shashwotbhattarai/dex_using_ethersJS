@@ -178,7 +178,7 @@ export function Stake({ provider, selectedAccount }: StakeProps) {
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-xl bg-gray-800 rounded-lg shadow-xl">
 			<h2 className="text-white text-3xl font-semibold text-center mb-6">
-				Stake Your Tokens
+				Stake Shashwot Tokens
 			</h2>
 
 			<div className="space-y-4">
@@ -188,7 +188,7 @@ export function Stake({ provider, selectedAccount }: StakeProps) {
 						value={stakeAmount}
 						onChange={handleStakeChange}
 						placeholder="Enter amount to stake"
-						className="flex-grow p-2 border-2 border-blue-500 bg-gray-900 text-white rounded focus:outline-none focus:border-blue-700"
+						className="flex-grow rounded-l p-4 bg-gray-700 focus:outline-none text-white"
 					/>
 					<button
 						onClick={handleSubmit}
@@ -205,7 +205,7 @@ export function Stake({ provider, selectedAccount }: StakeProps) {
 						value={unStakeAmount}
 						onChange={handleUnStakeChange}
 						placeholder="Enter amount to unstake"
-						className="flex-grow p-2 border-2 border-blue-500 bg-gray-900 text-white rounded focus:outline-none focus:border-blue-700"
+						className="flex-grow rounded-l p-4 bg-gray-700 focus:outline-none text-white"
 					/>
 					<button
 						onClick={withdrawStakedAmount}
@@ -223,7 +223,7 @@ export function Stake({ provider, selectedAccount }: StakeProps) {
 					>
 						{isCheckStakedAmountLoading ? <Loader /> : "Check Staked Amount"}
 					</button>
-					<span className="ml-4 p-2 bg-blue-500 text-white rounded">
+					<span className="ml-4 p-2 bg-gray-700 text-white rounded">
 						{totalStakedAmount}
 					</span>
 				</div>

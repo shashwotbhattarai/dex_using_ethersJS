@@ -90,6 +90,9 @@ export function Swap({ provider}: SwapProps) {
 
 	return (
 		<div className="bg-gray-800 text-white max-w-md mx-auto rounded-xl shadow-md overflow-hidden p-6 space-y-8">
+			<h2 className="text-white text-3xl font-semibold text-center mb-6">
+				Swap
+			</h2>
 			<div>
 				<div className="mb-4">
 					<label className="block text-md mb-2" htmlFor="pay">
