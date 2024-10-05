@@ -2,7 +2,7 @@
 
 ## Installations
 
-- Clone this repository using git clone `https://github.com/ShashwotBhattarai/eth_dex.git`
+- Clone this repository using git clone `https://github.com/shashwotbhattarai/dex_using_ethersJS.git`
 - Make sure you have node installed on your machine.
 - Install the required dependencies with `npm install`
 - Run the application with `npm run dev`
