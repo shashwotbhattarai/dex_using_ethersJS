@@ -1,6 +1,6 @@
 # Dex DApp
 
-## Installation
+## Installations
 
 - Clone this repository using git clone `https://github.com/ShashwotBhattarai/eth_dex.git`
 - Make sure you have node installed on your machine.
